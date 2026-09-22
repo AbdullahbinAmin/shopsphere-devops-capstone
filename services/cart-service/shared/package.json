@@ -1,0 +1,11 @@
+{
+  "name": "@shopsphere/shared",
+  "version": "1.0.0",
+  "description": "Shared utilities for ShopSphere microservices",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "uuid": "^9.0.0",
+    "winston": "^3.11.0"
+  }
+}

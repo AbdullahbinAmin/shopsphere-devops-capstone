@@ -1,0 +1,220 @@
+# =============================================================================
+# ShopSphere — Docker Compose for LOCAL DEVELOPMENT DEPENDENCIES ONLY
+#
+# This file is for developer convenience ONLY.
+# It starts the database and Redis infrastructure so developers can run
+# the microservices directly on their local machine with Node.js.
+#
+# THIS IS NOT THE FINAL PRODUCTION DEPLOYMENT.
+# DevOps students will create the actual production containerization.
+#
+# Usage:
+#   docker compose -f docker-compose.dev.yml up -d
+#   docker compose -f docker-compose.dev.yml down
+#   docker compose -f docker-compose.dev.yml down -v   (remove data)
+# =============================================================================
+
+version: '3.9'
+
+services:
+  # -------------------------------------------------------------------------
+  # PostgreSQL — Identity Service Database
+  # -------------------------------------------------------------------------
+  db-identity:
+    image: postgres:16-alpine
+    container_name: shopsphere-db-identity
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: shopsphere_identity
+      POSTGRES_USER: shopsphere_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-devpassword123}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_identity_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shopsphere_user -d shopsphere_identity"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -------------------------------------------------------------------------
+  # PostgreSQL — User Service Database
+  # -------------------------------------------------------------------------
+  db-users:
+    image: postgres:16-alpine
+    container_name: shopsphere-db-users
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: shopsphere_users
+      POSTGRES_USER: shopsphere_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-devpassword123}
+    ports:
+      - "5433:5432"
+    volumes:
+      - pg_users_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shopsphere_user -d shopsphere_users"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -------------------------------------------------------------------------
+  # PostgreSQL — Product Service Database
+  # -------------------------------------------------------------------------
+  db-products:
+    image: postgres:16-alpine
+    container_name: shopsphere-db-products
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: shopsphere_products
+      POSTGRES_USER: shopsphere_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-devpassword123}
+    ports:
+      - "5434:5432"
+    volumes:
+      - pg_products_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shopsphere_user -d shopsphere_products"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -------------------------------------------------------------------------
+  # PostgreSQL — Inventory Service Database
+  # -------------------------------------------------------------------------
+  db-inventory:
+    image: postgres:16-alpine
+    container_name: shopsphere-db-inventory
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: shopsphere_inventory
+      POSTGRES_USER: shopsphere_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-devpassword123}
+    ports:
+      - "5435:5432"
+    volumes:
+      - pg_inventory_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shopsphere_user -d shopsphere_inventory"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -------------------------------------------------------------------------
+  # PostgreSQL — Order Service Database
+  # -------------------------------------------------------------------------
+  db-orders:
+    image: postgres:16-alpine
+    container_name: shopsphere-db-orders
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: shopsphere_orders
+      POSTGRES_USER: shopsphere_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-devpassword123}
+    ports:
+      - "5436:5432"
+    volumes:
+      - pg_orders_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shopsphere_user -d shopsphere_orders"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -------------------------------------------------------------------------
+  # PostgreSQL — Payment Service Database
+  # -------------------------------------------------------------------------
+  db-payments:
+    image: postgres:16-alpine
+    container_name: shopsphere-db-payments
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: shopsphere_payments
+      POSTGRES_USER: shopsphere_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-devpassword123}
+    ports:
+      - "5437:5432"
+    volumes:
+      - pg_payments_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shopsphere_user -d shopsphere_payments"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -------------------------------------------------------------------------
+  # PostgreSQL — Notification Service Database
+  # -------------------------------------------------------------------------
+  db-notifications:
+    image: postgres:16-alpine
+    container_name: shopsphere-db-notifications
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: shopsphere_notifications
+      POSTGRES_USER: shopsphere_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-devpassword123}
+    ports:
+      - "5438:5432"
+    volumes:
+      - pg_notifications_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shopsphere_user -d shopsphere_notifications"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -------------------------------------------------------------------------
+  # Redis — Cart Service Cache
+  # -------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: shopsphere-redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:-redisdevpass} --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "${REDIS_PASSWORD:-redisdevpass}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -------------------------------------------------------------------------
+  # pgAdmin — Optional database management UI (dev only)
+  # Access at http://localhost:5050
+  # Email: admin@shopsphere.dev  Password: admin123
+  # -------------------------------------------------------------------------
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: shopsphere-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@shopsphere.dev
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - db-identity
+    profiles:
+      - tools  # Only start with: docker compose --profile tools up -d
+
+volumes:
+  pg_identity_data:
+  pg_users_data:
+  pg_products_data:
+  pg_inventory_data:
+  pg_orders_data:
+  pg_payments_data:
+  pg_notifications_data:
+  redis_data:
+  pgadmin_data:
+
+networks:
+  default:
+    name: shopsphere-dev-network

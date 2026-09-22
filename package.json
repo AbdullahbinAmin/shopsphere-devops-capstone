@@ -1,0 +1,27 @@
+{
+  "name": "shopsphere-platform",
+  "version": "1.0.0",
+  "description": "Enterprise E-Commerce Microservices Platform — DevOps Capstone Project",
+  "scripts": {
+    "setup:win": "powershell -ExecutionPolicy Bypass -File ./scripts/setup/setup-dev.ps1",
+    "setup:nix": "bash ./scripts/setup/setup-dev.sh",
+    "db:up": "docker compose -f docker-compose.dev.yml up -d",
+    "db:down": "docker compose -f docker-compose.dev.yml down",
+    "seed": "node scripts/seed/index.js",
+    "build:frontend": "cd frontend && npm run build",
+    "test": "npm --prefix services/identity-service test && npm --prefix services/product-service test && npm --prefix services/inventory-service test && npm --prefix services/order-service test",
+    "start:win": "powershell -ExecutionPolicy Bypass -File ./scripts/setup/start-all.ps1"
+  },
+  "keywords": [
+    "microservices",
+    "ecommerce",
+    "devops",
+    "capstone",
+    "docker",
+    "kubernetes",
+    "react",
+    "nodejs"
+  ],
+  "author": "ShopSphere Core Engineering Team",
+  "license": "MIT"
+}
