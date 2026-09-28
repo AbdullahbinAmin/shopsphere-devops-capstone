@@ -105,25 +105,26 @@ app.use((req, res, next) => {
 // ---- Proxy helper ----
 function createProxy(serviceUrl) {
   return proxy(serviceUrl, {
+    proxyReqPathResolver: (req) => req.originalUrl,
     proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
-      proxyReqOpts.headers['X-Correlation-ID'] = srcReq.correlationId;
-      proxyReqOpts.headers['X-Request-ID'] = srcReq.requestId;
-      proxyReqOpts.headers['X-Forwarded-For'] = srcReq.ip;
-      proxyReqOpts.headers['X-Gateway-Source'] = 'api-gateway';
+      proxyReqOpts.headers["X-Correlation-ID"] = srcReq.correlationId;
+      proxyReqOpts.headers["X-Request-ID"] = srcReq.requestId;
+      proxyReqOpts.headers["X-Forwarded-For"] = srcReq.ip;
+      proxyReqOpts.headers["X-Gateway-Source"] = "api-gateway";
       return proxyReqOpts;
     },
     userResDecorator: (proxyRes, proxyResData, userReq, userRes) => {
-      userRes.setHeader('X-Correlation-ID', userReq.correlationId);
+      userRes.setHeader("X-Correlation-ID", userReq.correlationId);
       return proxyResData;
     },
     proxyErrorHandler: (err, res, next) => {
-      logger.error('Proxy error', { error: err.message, code: err.code });
-      const statusCode = err.code === 'ECONNREFUSED' ? 503 : 502;
-      const errorCode = err.code === 'ECONNREFUSED' ? 'SERVICE_UNAVAILABLE' : 'GATEWAY_ERROR';
+      logger.error("Proxy error", { error: err.message, code: err.code });
+      const statusCode = err.code === "ECONNREFUSED" ? 503 : 502;
+      const errorCode = err.code === "ECONNREFUSED" ? "SERVICE_UNAVAILABLE" : "GATEWAY_ERROR";
       res.status(statusCode).json({
         success: false,
         error: errorCode,
-        message: statusCode === 503 ? 'Service is temporarily unavailable. Please try again.' : 'Gateway error.',
+        message: statusCode === 503 ? "Service is temporarily unavailable. Please try again." : "Gateway error.",
         timestamp: new Date().toISOString(),
       });
     },

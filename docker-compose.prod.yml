@@ -1,0 +1,183 @@
+services:
+  # ==========================================
+  # Frontend Storefront & Admin (Nginx)
+  # ==========================================
+  frontend:
+    image: shopsphere-frontend:v1.0.0
+    container_name: shopsphere-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - shopsphere-network
+
+  # ==========================================
+  # API Gateway Proxy (Port 3000)
+  # ==========================================
+  api-gateway:
+    image: shopsphere-api-gateway:v1.0.0
+    container_name: shopsphere-api-gateway
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      - IDENTITY_SERVICE_URL=http://identity-service:3001
+      - USER_SERVICE_URL=http://user-service:3002
+      - PRODUCT_SERVICE_URL=http://product-service:3003
+      - INVENTORY_SERVICE_URL=http://inventory-service:3004
+      - CART_SERVICE_URL=http://cart-service:3005
+      - ORDER_SERVICE_URL=http://order-service:3006
+      - PAYMENT_SERVICE_URL=http://payment-service:3007
+      - NOTIFICATION_SERVICE_URL=http://notification-service:3008
+      - CORS_ORIGINS=*
+    depends_on:
+      - identity-service
+      - product-service
+    networks:
+      - shopsphere-network
+
+  # ==========================================
+  # Core Backend Microservices
+  # ==========================================
+  identity-service:
+    image: shopsphere-identity-service:v1.0.0
+    container_name: shopsphere-identity-service
+    restart: unless-stopped
+    environment:
+      - PORT=3001
+      - NODE_ENV=production
+      - DB_HOST=db-identity
+      - DB_PORT=5432
+      - DB_NAME=shopsphere_identity
+      - DB_USER=shopsphere_user
+      - DB_PASSWORD=devpassword123
+      - JWT_SECRET=production_super_secret_jwt_key_2026_shopsphere
+    networks:
+      - shopsphere-network
+
+  user-service:
+    image: shopsphere-user-service:v1.0.0
+    container_name: shopsphere-user-service
+    restart: unless-stopped
+    environment:
+      - PORT=3002
+      - NODE_ENV=production
+      - DB_HOST=db-users
+      - DB_PORT=5432
+      - DB_NAME=shopsphere_users
+      - DB_USER=shopsphere_user
+      - DB_PASSWORD=devpassword123
+      - JWT_SECRET=production_super_secret_jwt_key_2026_shopsphere
+    networks:
+      - shopsphere-network
+
+  product-service:
+    image: shopsphere-product-service:v1.0.0
+    container_name: shopsphere-product-service
+    restart: unless-stopped
+    environment:
+      - PORT=3003
+      - NODE_ENV=production
+      - DB_HOST=db-products
+      - DB_PORT=5432
+      - DB_NAME=shopsphere_products
+      - DB_USER=shopsphere_user
+      - DB_PASSWORD=devpassword123
+      - JWT_SECRET=production_super_secret_jwt_key_2026_shopsphere
+    networks:
+      - shopsphere-network
+
+  inventory-service:
+    image: shopsphere-inventory-service:v1.0.0
+    container_name: shopsphere-inventory-service
+    restart: unless-stopped
+    environment:
+      - PORT=3004
+      - NODE_ENV=production
+      - DB_HOST=db-inventory
+      - DB_PORT=5432
+      - DB_NAME=shopsphere_inventory
+      - DB_USER=shopsphere_user
+      - DB_PASSWORD=devpassword123
+      - INTERNAL_API_KEY=shopsphere_internal_api_secret_key
+    networks:
+      - shopsphere-network
+
+  cart-service:
+    image: shopsphere-cart-service:v1.0.0
+    container_name: shopsphere-cart-service
+    restart: unless-stopped
+    environment:
+      - PORT=3005
+      - NODE_ENV=production
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=redisdevpass
+      - PRODUCT_SERVICE_URL=http://product-service:3003
+      - INVENTORY_SERVICE_URL=http://inventory-service:3004
+      - JWT_SECRET=production_super_secret_jwt_key_2026_shopsphere
+    networks:
+      - shopsphere-network
+
+  order-service:
+    image: shopsphere-order-service:v1.0.0
+    container_name: shopsphere-order-service
+    restart: unless-stopped
+    environment:
+      - PORT=3006
+      - NODE_ENV=production
+      - DB_HOST=db-orders
+      - DB_PORT=5432
+      - DB_NAME=shopsphere_orders
+      - DB_USER=shopsphere_user
+      - DB_PASSWORD=devpassword123
+      - INTERNAL_API_KEY=shopsphere_internal_api_secret_key
+      - INVENTORY_SERVICE_URL=http://inventory-service:3004
+      - PAYMENT_SERVICE_URL=http://payment-service:3007
+      - NOTIFICATION_SERVICE_URL=http://notification-service:3008
+      - JWT_SECRET=production_super_secret_jwt_key_2026_shopsphere
+    networks:
+      - shopsphere-network
+
+  payment-service:
+    image: shopsphere-payment-service:v1.0.0
+    container_name: shopsphere-payment-service
+    restart: unless-stopped
+    environment:
+      - PORT=3007
+      - NODE_ENV=production
+      - DB_HOST=db-payments
+      - DB_PORT=5432
+      - DB_NAME=shopsphere_payments
+      - DB_USER=shopsphere_user
+      - DB_PASSWORD=devpassword123
+      - INTERNAL_API_KEY=shopsphere_internal_api_secret_key
+      - JWT_SECRET=production_super_secret_jwt_key_2026_shopsphere
+    networks:
+      - shopsphere-network
+
+  notification-service:
+    image: shopsphere-notification-service:v1.0.0
+    container_name: shopsphere-notification-service
+    restart: unless-stopped
+    environment:
+      - PORT=3008
+      - NODE_ENV=production
+      - DB_HOST=db-notifications
+      - DB_PORT=5432
+      - DB_NAME=shopsphere_notifications
+      - DB_USER=shopsphere_user
+      - DB_PASSWORD=devpassword123
+      - INTERNAL_API_KEY=shopsphere_internal_api_secret_key
+      - JWT_SECRET=production_super_secret_jwt_key_2026_shopsphere
+    networks:
+      - shopsphere-network
+
+networks:
+  shopsphere-network:
+    name: shopsphere-dev-network
+    external: true
